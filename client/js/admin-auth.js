@@ -19,16 +19,20 @@ document.addEventListener('DOMContentLoaded', () => {
             await firebase.auth().signInWithEmailAndPassword(ADMIN_EMAIL, password);
             return true;
         } catch (error) {
-            if (error.code === 'auth/user-not-found') {
+            console.warn("Sign-in failed:", error.code, "— attempting account creation");
+            // Firebase v10 uses 'auth/invalid-credential' instead of 'auth/user-not-found'
+            const shouldCreate = ['auth/user-not-found', 'auth/invalid-credential', 'auth/invalid-login-credentials'].includes(error.code);
+            if (shouldCreate) {
                 try {
                     await firebase.auth().createUserWithEmailAndPassword(ADMIN_EMAIL, password);
+                    console.log("Admin account created successfully");
                     return true;
                 } catch (createError) {
-                    console.error("Failed to create admin user:", createError);
+                    console.error("Account creation failed:", createError.code, createError.message);
                     return false;
                 }
             }
-            console.error("Admin auth failed:", error);
+            console.error("Admin auth failed:", error.code, error.message);
             return false;
         }
     }
