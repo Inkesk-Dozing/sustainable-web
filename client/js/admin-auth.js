@@ -7,8 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginError = document.getElementById('loginError');
     const loginBtn = document.getElementById('loginBtn');
 
-    // Admin ID mapped to Firebase email
-    const ADMIN_ID = "admin";
+    // Accept both 'admin' and 'admin@krmu.edu.in'
     const ADMIN_EMAIL = "admin@krmu.edu.in";
 
     async function authenticateAdminWithFirebase(password) {
@@ -44,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loginBtn.textContent = "Verifying...";
         loginError.textContent = "";
 
-        if (userId === ADMIN_ID) {
+        if (userId === 'admin' || userId === ADMIN_EMAIL) {
             const success = await authenticateAdminWithFirebase(pass);
             
             if (success) {
