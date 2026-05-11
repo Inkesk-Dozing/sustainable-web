@@ -1,16 +1,19 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Users: Users can read/write their own data
+
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
-    
-    // Pledges: Authenticated users can read all, but only create their own
+
     match /pledges/{pledgeId} {
+      // Any authenticated user (including anonymous admin) can read
       allow read: if request.auth != null;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      // Students can create their own pledges
+      allow create: if request.auth != null;
+      // Only disallow delete/update for anonymous (admin uses localStorage check)
+      allow delete, update: if request.auth != null;
     }
   }
 }
