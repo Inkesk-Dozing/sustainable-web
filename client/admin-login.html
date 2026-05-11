@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin Login - KRMU ECHOSENSE">
+    <meta name="theme-color" content="#0a0a0c">
+    <title>Admin Login - KRMU ECHOSENSE</title>
+
+    <script>
+        (function () {
+            const theme = localStorage.getItem('krmu-theme') || 'system';
+            const resolved = theme === 'system'
+                ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+                : theme;
+            document.documentElement.dataset.theme = resolved;
+        })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="styles/tokens.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/liquid-glass.css">
+
+    <style>
+        .video-bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -2;
+        }
+
+        .back-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: rgba(10, 10, 12, 0.7);
+            backdrop-filter: blur(3px);
+        }
+
+        [data-theme="light"] .video-overlay {
+            background: rgba(255, 255, 255, 0.65);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="video-bg-container">
+        <video id="bgVideo" class="back-video" autoplay loop muted playsinline preload="metadata">
+            <source src="green-forest-moewalls-com.mp4" type="video/mp4">
+        </video>
+    </div>
+    <div class="video-overlay"></div>
+
+    <header class="auth-header">
+        <a href="/" class="auth-header__brand">
+            KRMU <span class="auth-header__brand-accent">ECHOSENSE</span>
+            <span class="text-xs ml-2 opacity-50 px-2 py-0.5 border border-current rounded-full">ADMIN</span>
+        </a>
+    </header>
+
+    <main class="auth-layout">
+        <div class="auth-layout__card">
+            <div class="card glass glass--accent">
+                <div class="glass__shine"></div>
+                <div class="glass__noise" aria-hidden="true"></div>
+
+                <div class="card__header text-center">
+                    <h1 class="card__title">Admin Access</h1>
+                    <p class="card__description">Enter administrative credentials</p>
+                </div>
+
+                <div class="card__content">
+                    <form id="adminLoginForm" class="form">
+                        <div class="field">
+                            <label for="adminUser" class="label">Admin ID</label>
+                            <input type="text" id="adminUser" class="input" placeholder="Admin username" required>
+                        </div>
+
+                        <div class="field">
+                            <label for="adminPass" class="label">Password</label>
+                            <input type="password" id="adminPass" class="input" placeholder="••••••••" required>
+                            <div id="loginError" class="error mt-2" role="alert"></div>
+                        </div>
+
+                        <button type="submit" id="loginBtn" class="btn btn--primary btn--full mt-4">
+                            Login to Panel
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="js/env-config.js"></script>
+    <script src="js/firebase-init.js"></script>
+    <script src="js/admin-auth.js"></script>
+</body>
+
+</html>
