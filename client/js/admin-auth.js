@@ -7,13 +7,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginError = document.getElementById('loginError');
     const loginBtn = document.getElementById('loginBtn');
 
-    // Admin Credentials
-    // In a real app, these should be handled via a backend or custom claims.
-    // For this project, we'll use a dedicated admin login check.
+    // Admin ID mapped to Firebase email
     const ADMIN_ID = "admin";
-    const ADMIN_PASS = "admin123"; // User should change this
+    const ADMIN_EMAIL = "admin@krmu.edu.in";
 
-    loginForm.addEventListener('submit', (e) => {
+    async function authenticateAdminWithFirebase(password) {
+        if (typeof firebase === 'undefined' || !firebase.auth) {
+            console.error("Firebase Auth not loaded");
+            return false;
+        }
+        try {
+            await firebase.auth().signInWithEmailAndPassword(ADMIN_EMAIL, password);
+            return true;
+        } catch (error) {
+            if (error.code === 'auth/user-not-found') {
+                try {
+                    await firebase.auth().createUserWithEmailAndPassword(ADMIN_EMAIL, password);
+                    return true;
+                } catch (createError) {
+                    console.error("Failed to create admin user:", createError);
+                    return false;
+                }
+            }
+            console.error("Admin auth failed:", error);
+            return false;
+        }
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const userId = document.getElementById('adminUser').value;
@@ -23,21 +44,28 @@ document.addEventListener('DOMContentLoaded', () => {
         loginBtn.textContent = "Verifying...";
         loginError.textContent = "";
 
-        // Simple validation
-        if (userId === ADMIN_ID && pass === ADMIN_PASS) {
-            // Set admin session
-            localStorage.setItem('krmu_admin_session', 'true');
-            localStorage.setItem('krmu_admin_id', userId);
+        if (userId === ADMIN_ID) {
+            const success = await authenticateAdminWithFirebase(pass);
             
-            showToast('Login Successful', 'Welcome to the Admin Panel', 'success');
-            
-            setTimeout(() => {
-                window.location.href = 'admin-dashboard.html';
-            }, 1000);
+            if (success) {
+                localStorage.setItem('krmu_admin_session', 'true');
+                localStorage.setItem('krmu_admin_id', userId);
+                
+                showToast('Login Successful', 'Welcome to the Admin Panel', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'admin-dashboard.html';
+                }, 1000);
+            } else {
+                loginBtn.disabled = false;
+                loginBtn.textContent = "Login to Panel";
+                loginError.textContent = "Invalid Admin ID or Password";
+                showToast('Login Failed', 'Please check your credentials', 'error');
+            }
         } else {
             loginBtn.disabled = false;
             loginBtn.textContent = "Login to Panel";
-            loginError.textContent = "Invalid Admin ID or Password";
+            loginError.textContent = "Invalid Admin ID";
             showToast('Login Failed', 'Please check your credentials', 'error');
         }
     });

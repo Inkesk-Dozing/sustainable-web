@@ -30,91 +30,106 @@
     <style>
         .admin-table-container {
             margin-top: 2rem;
-            background: rgba(var(--bg-rgb), 0.5);
-            backdrop-filter: blur(10px);
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
             border-radius: var(--radius-lg);
-            border: 1px solid rgba(var(--border-rgb), 0.1);
-            overflow: hidden;
+            border: 1px solid var(--glass-border-color);
+            box-shadow: var(--glass-shadow-combined);
+            overflow-x: auto;
         }
 
         .admin-table {
             width: 100%;
+            min-width: 800px;
             border-collapse: collapse;
-            font-size: 0.875rem;
+            font-size: var(--text-sm);
         }
 
         .admin-table th {
             text-align: left;
-            padding: 1rem;
-            background: rgba(var(--primary-rgb), 0.1);
-            font-weight: 600;
-            color: var(--text-muted);
-            border-bottom: 1px solid rgba(var(--border-rgb), 0.1);
+            padding: var(--space-4);
+            background: hsl(var(--primary) / 0.1);
+            font-weight: var(--font-semibold);
+            color: hsl(var(--muted-foreground));
+            border-bottom: 1px solid hsl(var(--border));
         }
 
         .admin-table td {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(var(--border-rgb), 0.05);
+            padding: var(--space-4);
+            border-bottom: 1px solid hsl(var(--border) / 0.5);
             vertical-align: middle;
+            color: hsl(var(--foreground));
         }
 
         .admin-table tr:hover {
-            background: rgba(var(--primary-rgb), 0.02);
+            background: hsl(var(--primary) / 0.05);
         }
 
-        .badge {
-            padding: 0.25rem 0.5rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-
-        .badge--volunteer { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-        .badge--quiz { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .badge--volunteer { background: hsl(210 90% 55% / 0.15); color: hsl(210 90% 55%); }
+        .badge--quiz { background: hsl(142 64% 38% / 0.15); color: hsl(142 64% 38%); }
 
         .btn--delete {
-            color: #ef4444;
-            padding: 0.5rem;
-            border-radius: 0.375rem;
-            transition: all 0.2s;
+            color: hsl(var(--destructive));
+            padding: var(--space-2);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+            background: transparent;
+            border: none;
+            cursor: pointer;
         }
 
         .btn--delete:hover {
-            background: rgba(239, 68, 68, 0.1);
+            background: hsl(var(--destructive) / 0.15);
         }
 
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            gap: var(--space-6);
+            margin-bottom: var(--space-8);
         }
 
         .stat-card {
-            padding: 1.5rem;
+            padding: var(--space-6);
             background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--glass-border-color);
             border-radius: var(--radius-lg);
             text-align: center;
+            box-shadow: var(--glass-shadow-combined);
+            backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
         }
 
         .stat-card__value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
+            font-size: 2.5rem;
+            font-weight: var(--font-bold);
+            color: hsl(var(--primary));
+            margin-bottom: var(--space-2);
         }
 
         .stat-card__label {
-            font-size: 0.875rem;
-            color: var(--text-muted);
+            font-size: var(--text-sm);
+            color: hsl(var(--muted-foreground));
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            font-weight: var(--font-medium);
+        }
+        
+        .flex-row-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-4);
+        }
+        
+        .title-text {
+            font-size: var(--text-xl);
+            font-weight: var(--font-bold);
+            color: hsl(var(--foreground));
         }
     </style>
 </head>
 
-<body class="dashboard-body">
+<body>
     <div class="video-bg-container">
         <video id="bgVideo" class="back-video" autoplay loop muted playsinline preload="metadata">
             <source src="green-forest-moewalls-com.mp4" type="video/mp4">
@@ -122,23 +137,21 @@
     </div>
     <div class="video-overlay"></div>
 
-    <header class="dashboard-header">
-        <div class="container flex justify-between items-center h-full">
-            <div class="flex items-center gap-4">
-                <a href="/" class="auth-header__brand">
-                    KRMU <span class="auth-header__brand-accent">ECHOSENSE</span>
-                </a>
-                <span class="text-xs opacity-50 px-2 py-0.5 border border-current rounded-full">ADMIN PANEL</span>
-            </div>
+    <header class="site-header">
+        <div class="site-header__inner">
+            <a href="/" class="site-header__brand">
+                KRMU <span class="site-header__brand-accent">ECHOSENSE</span>
+                <span class="badge badge--destructive" style="margin-left: 8px;">ADMIN</span>
+            </a>
             
-            <div class="flex items-center gap-4">
+            <nav class="site-header__nav" style="gap: 16px;">
                 <button id="exportBtn" class="btn btn--secondary btn--sm">Export CSV</button>
                 <button id="adminLogoutBtn" class="btn btn--ghost btn--sm">Logout</button>
-            </div>
+            </nav>
         </div>
     </header>
 
-    <main class="container py-8">
+    <main class="container mt-6 mb-6">
         <div class="stats-grid">
             <div class="stat-card">
                 <div id="statTotalResponses" class="stat-card__value">0</div>
@@ -154,10 +167,10 @@
             </div>
         </div>
 
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-bold">All User Responses</h2>
-            <div class="flex gap-2">
-                <input type="text" id="searchInput" class="input input--sm" placeholder="Search name or dept...">
+        <div class="flex-row-between">
+            <h2 class="title-text">All User Responses</h2>
+            <div>
+                <input type="text" id="searchInput" class="input" style="height: 36px;" placeholder="Search name or dept...">
             </div>
         </div>
 
