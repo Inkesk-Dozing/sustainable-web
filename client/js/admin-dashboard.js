@@ -49,26 +49,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             await waitForFirebase();
 
             showTableStatus('Checking authentication...');
-
-            // Attempt to sign in with the stored admin credentials
-            // If already signed in, onAuthStateChanged resolves immediately
             let user = await waitForAuth(5000);
 
             if (!user) {
-                // Not signed in — try auto sign-in with admin email using a known password attempt
-                showTableStatus('Re-authenticating admin...');
-                // We can't silently re-auth without a password here.
-                // Fall through to fetch anyway — Firestore rules might allow public read,
-                // or the user is still in a valid local session.
+                // No active session — sign in anonymously to satisfy Firestore rules
+                showTableStatus('Establishing secure session...');
+                try {
+                    await window.authDB.signInAnonymously();
+                    console.log('Signed in anonymously for Firestore access');
+                } catch (anonErr) {
+                    console.warn('Anonymous sign-in failed:', anonErr.code);
+                }
             }
 
             showTableStatus('Fetching all responses...');
             await fetchAllResponses();
         } catch (err) {
             console.error('Init error:', err);
-            showTableStatus(`Error: ${err.message}. Retrying with open rules...`);
-            // Last-ditch attempt: fetch without waiting for auth
-            await fetchAllResponsesFallback();
+            // Last-ditch: try anonymous sign-in then fetch
+            try {
+                await window.authDB.signInAnonymously();
+            } catch (_) {}
+            await fetchAllResponses();
         }
     }
 
