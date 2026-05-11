@@ -71,16 +71,29 @@ async function initDashboard() {
         // Auth success: Show content
         document.body.classList.remove('auth-loading');
 
-        elements.userName.textContent = user.displayName || user.email.split('@')[0] || 'Student';
+        const isAdmin = localStorage.getItem('krmu_admin_session') === 'true';
 
-        // 2. Check Volunteer Status
-        checkVolunteerStatus(user.uid);
+        if (isAdmin) {
+            document.getElementById('studentPanel').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            initAdminDashboard();
+        } else {
+            const studentPanel = document.getElementById('studentPanel');
+            if (studentPanel) studentPanel.style.display = 'block';
+            const adminPanel = document.getElementById('adminPanel');
+            if (adminPanel) adminPanel.style.display = 'none';
 
-        // 3. Check Quiz Status
-        checkQuizStatus(user.uid);
+            elements.userName.textContent = user.displayName || user.email.split('@')[0] || 'Student';
 
-        // 4. Fetch Dashboard Stats
-        await fetchStats();
+            // 2. Check Volunteer Status
+            checkVolunteerStatus(user.uid);
+
+            // 3. Check Quiz Status
+            checkQuizStatus(user.uid);
+
+            // 4. Fetch Dashboard Stats
+            await fetchStats();
+        }
 
     } catch (error) {
         console.error('Dashboard init failed:', error);
@@ -416,6 +429,7 @@ if (elements.logoutBtn) {
         try {
             // Immediate optimistic cleanup
             localStorage.removeItem('krmu_session');
+            localStorage.removeItem('krmu_admin_session');
 
             if (window.authDB) {
                 await window.authDB.signOut();
@@ -427,6 +441,135 @@ if (elements.logoutBtn) {
             console.error('Logout failed', error);
         }
     });
+}
+
+// ============================================
+// ADMIN DASHBOARD LOGIC
+// ============================================
+let allResponses = [];
+
+async function initAdminDashboard() {
+    const responsesTable = document.getElementById('adminResponsesTable');
+    const totalResponsesEl = document.getElementById('statTotalResponses');
+    const totalVolunteersEl = document.getElementById('statTotalVolunteers');
+    const totalQuizzesEl = document.getElementById('statTotalQuizzes');
+    const exportBtn = document.getElementById('exportBtn');
+    const searchInput = document.getElementById('searchInput');
+
+    async function fetchAllResponses() {
+        if (!window.db) {
+            console.error("Firestore not initialized");
+            return;
+        }
+
+        try {
+            const snapshot = await window.db.collection('pledges').orderBy('timestamp', 'desc').get();
+            allResponses = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            renderDashboard(allResponses);
+            updateStats(allResponses);
+        } catch (error) {
+            console.error("Error fetching responses:", error);
+            showToast('Error', 'Failed to load data', 'error');
+        }
+    }
+
+    function renderDashboard(data) {
+        if (data.length === 0) {
+            responsesTable.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-muted">No responses found</td></tr>';
+            return;
+        }
+
+        responsesTable.innerHTML = data.map(item => {
+            const date = item.timestamp ? item.timestamp.toDate().toLocaleDateString() : 'N/A';
+            const typeClass = item.type === 'volunteer' ? 'badge--volunteer' : 'badge--quiz';
+            const typeLabel = item.type === 'volunteer' ? 'Volunteer' : 'Quiz Submission';
+            
+            return `
+                <tr data-id="${item.id}" style="border-bottom: 1px solid rgba(var(--border-rgb), 0.1);">
+                    <td class="p-4 text-muted">${date}</td>
+                    <td class="p-4 font-medium">${escapeHtml(item.fullName || item.userName || 'Anonymous')}</td>
+                    <td class="p-4">${escapeHtml(item.department || 'N/A')}</td>
+                    <td class="p-4"><span class="px-2 py-1 rounded-full text-xs font-medium ${typeClass}">${typeLabel}</span></td>
+                    <td class="p-4 font-mono text-primary">${item.score || 0}</td>
+                    <td class="p-4 text-right">
+                        <button style="color: #ef4444;" onclick="deleteResponse('${item.id}')" title="Delete Response">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    function updateStats(data) {
+        totalResponsesEl.textContent = data.length;
+        totalVolunteersEl.textContent = data.filter(i => i.type === 'volunteer' || i.volunteer === 'Yes').length;
+        totalQuizzesEl.textContent = data.filter(i => i.status === 'submitted' || i.type !== 'volunteer').length;
+    }
+
+    window.deleteResponse = async (id) => {
+        if (!confirm('Are you sure you want to delete this response?')) return;
+
+        try {
+            await window.db.collection('pledges').doc(id).delete();
+            showToast('Deleted', 'Response has been removed', 'success');
+            // Optimistic UI update
+            allResponses = allResponses.filter(r => r.id !== id);
+            renderDashboard(allResponses);
+            updateStats(allResponses);
+        } catch (error) {
+            console.error("Error deleting document:", error);
+            showToast('Error', 'Failed to delete response', 'error');
+        }
+    };
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = allResponses.filter(item => {
+                const name = (item.fullName || item.userName || '').toLowerCase();
+                const dept = (item.department || '').toLowerCase();
+                return name.includes(query) || dept.includes(query);
+            });
+            renderDashboard(filtered);
+        });
+    }
+
+    if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+            if (allResponses.length === 0) return;
+
+            const headers = ['Date', 'Name', 'Department', 'Type', 'Score', 'User ID'];
+            const csvRows = [
+                headers.join(','),
+                ...allResponses.map(item => {
+                    const date = item.timestamp ? item.timestamp.toDate().toISOString() : '';
+                    return [
+                        `"${date}"`,
+                        `"${item.fullName || item.userName || ''}"`,
+                        `"${item.department || ''}"`,
+                        `"${item.type || ''}"`,
+                        item.score || 0,
+                        `"${item.userId || ''}"`
+                    ].join(',');
+                })
+            ];
+
+            const csvString = csvRows.join('\n');
+            const blob = new Blob([csvString], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('download', `echosense_responses_${new Date().toISOString().split('T')[0]}.csv`);
+            a.click();
+        });
+    }
+
+    fetchAllResponses();
 }
 
 // Auto-run

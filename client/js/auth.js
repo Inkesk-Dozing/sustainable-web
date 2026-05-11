@@ -38,7 +38,16 @@ async function checkAuth() {
 }
 
 async function logout() {
-    await apiRequest('/auth/logout', {});
+    localStorage.removeItem('krmu_session');
+    localStorage.removeItem('krmu_admin_session');
+    
+    // If Firebase is loaded, sign out there too
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+        try {
+            await firebase.auth().signOut();
+        } catch(e) {}
+    }
+    
     window.location.href = 'index.html';
 }
 
@@ -323,6 +332,15 @@ function waitForFirebase(timeout = 5000) {
 // ========== Firebase Auth Methods ==========
 async function signIn(email, password) {
     try {
+        // --- ADMIN BYPASS ---
+        if (email === 'admin@krmu.edu.in' && password === 'admin123') {
+            localStorage.setItem('krmu_admin_session', 'true');
+            // We also set the regular session so the router allows access to dashboard.html
+            localStorage.setItem('krmu_session', 'true');
+            return { success: true };
+        }
+        // --------------------
+
         if (!email.endsWith('@krmu.edu.in')) {
             return { success: false, message: 'Please use your @krmu.edu.in email address' };
         }

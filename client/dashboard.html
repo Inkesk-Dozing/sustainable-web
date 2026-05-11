@@ -117,7 +117,8 @@
 
     <!-- Main Content -->
     <main id="main" class="container mt-6 mb-6">
-
+        
+        <div id="studentPanel">
         <!-- Welcome Section -->
         <section class="mb-6 animate-slideUp">
             <h1 class="text-2xl font-bold mb-2">Welcome back, <span id="userName" class="text-primary">Student</span>
@@ -284,7 +285,58 @@
             </div>
 
         </div>
+        </div> <!-- End studentPanel -->
 
+        <!-- Admin Panel -->
+        <div id="adminPanel" style="display: none; width: 100%;">
+            <div class="flex items-center justify-between mb-6">
+                <h1 class="text-2xl font-bold">Admin Dashboard <span class="text-xs text-primary font-normal px-2 py-1 rounded border border-primary ml-2 opacity-80">ADMIN</span></h1>
+                <button id="exportBtn" class="btn btn--secondary btn--sm">Export CSV</button>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="glass-card p-6 text-center">
+                    <div class="glass-stat-value text-primary mb-2" id="statTotalResponses">0</div>
+                    <div class="text-xs text-muted tracking-wide uppercase">Total Responses</div>
+                </div>
+                <div class="glass-card p-6 text-center">
+                    <div class="glass-stat-value text-primary mb-2" id="statTotalVolunteers">0</div>
+                    <div class="text-xs text-muted tracking-wide uppercase">Total Volunteers</div>
+                </div>
+                <div class="glass-card p-6 text-center">
+                    <div class="glass-stat-value text-primary mb-2" id="statTotalQuizzes">0</div>
+                    <div class="text-xs text-muted tracking-wide uppercase">Quizzes Completed</div>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center mb-4 mt-8">
+                <h2 class="text-xl font-bold">All User Responses</h2>
+                <input type="text" id="searchInput" class="px-3 py-2 rounded-md border border-border bg-transparent text-foreground text-sm w-64" style="outline: none;" placeholder="Search name or dept...">
+            </div>
+
+            <div class="glass-card overflow-hidden">
+                <div style="overflow-x: auto; width: 100%;">
+                    <table class="table w-full text-left" style="min-width: 600px; border-collapse: collapse;">
+                        <thead class="border-b border-border text-muted text-sm bg-primary-10" style="background: rgba(var(--primary-rgb), 0.05);">
+                            <tr>
+                                <th class="p-4 font-semibold">Date</th>
+                                <th class="p-4 font-semibold">Name</th>
+                                <th class="p-4 font-semibold">Department</th>
+                                <th class="p-4 font-semibold">Type</th>
+                                <th class="p-4 font-semibold">Score</th>
+                                <th class="p-4 font-semibold text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminResponsesTable">
+                            <tr>
+                                <td colspan="6" class="text-center py-8 text-muted">Loading responses...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
         <div class="mt-8 text-center opacity-30 hover:opacity-100 transition-opacity">
             <a href="admin-login.html" class="text-xs text-muted decoration-none">Admin Portal</a>
@@ -356,6 +408,9 @@
         .font-medium {
             font-weight: 500;
         }
+
+        .badge--volunteer { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .badge--quiz { background: rgba(16, 185, 129, 0.1); color: #10b981; }
 
         .w-full {
             width: 100%;
