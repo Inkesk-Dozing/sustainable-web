@@ -1,16 +1,14 @@
-// Firebase Configuration
-// Expects window.ENV to be populated by env-config.js
-const env = window.ENV || {};
-
+// Firebase Configuration — values are hardcoded (Firebase client config is public by design,
+// protected by Firestore security rules, not by key secrecy)
 const firebaseConfig = {
-    apiKey: env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    databaseURL: "https://krmu-impact-bf09e-default-rtdb.firebaseio.com", // Keeping hardcoded as it's not sensitive/variable usually
-    projectId: env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: env.NEXT_PUBLIC_FIREBASE_APP_ID,
-    measurementId: env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    apiKey: "AIzaSyCcrmSuKbwTsUOigbZu_maCQmvf4HQ8ia4",
+    authDomain: "krmu-impact-bf09e.firebaseapp.com",
+    databaseURL: "https://krmu-impact-bf09e-default-rtdb.firebaseio.com",
+    projectId: "krmu-impact-bf09e",
+    storageBucket: "krmu-impact-bf09e.firebasestorage.app",
+    messagingSenderId: "676855708371",
+    appId: "1:676855708371:web:6e5ca271427a61312df226",
+    measurementId: "G-2ZHP3D9F8F"
 };
 
 // Initialize Firebase
