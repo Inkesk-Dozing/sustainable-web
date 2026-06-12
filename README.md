@@ -161,8 +161,8 @@ The available npm scripts in the project package configuration are defined below
 ## Security Practices
 
 * **Route Authorization Safeguard:** Files like `dashboard.html` and `form.html` run `js/session-guard.js` before page assets load. If an active authorization cookie or session token is missing, the request redirects immediately to `index.html`.
-* **Database Write Constraints:** Read and write queries to the Cloud Firestore database are validated against [firestore.rules](file:///C:/Users/USER/Desktop/Extras/sustainable-web/firestore.rules). These rules prevent unauthorized changes by verifying user authentication state and checking email domain compliance.
-* **Network Header Policies:** Global HTTP security configurations are managed inside the [netlify.toml](file:///C:/Users/USER/Desktop/Extras/sustainable-web/netlify.toml) file. The system enforces policy headers, including `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, and `Referrer-Policy: strict-origin-when-cross-origin`.
+* **Database Write Constraints:** Read and write queries to the Cloud Firestore database are validated against [firestore.rules](firestore.rules). These rules prevent unauthorized changes by verifying user authentication state and checking email domain compliance.
+* **Network Header Policies:** Global HTTP security configurations are managed inside the [netlify.toml](netlify.toml) file. The system enforces policy headers, including `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, and `Referrer-Policy: strict-origin-when-cross-origin`.
 
 ---
 
